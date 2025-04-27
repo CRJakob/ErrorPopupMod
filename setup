@@ -1,0 +1,12 @@
+#!/bin/zsh
+
+# i swear ill make this version agnostic at some point
+pandoc -f markdown -t html 0.1.0/description.md -o 0.1.0/description.html --lua-filter pandoc-filter.lua
+tsc 0.1.0/main.mod.ts --target ES2020 --module ES2020
+
+if [[ "$1" == "host" ]]; then
+    trap "trap - TERM && kill -- -$$" INT TERM EXIT
+    (cd PolyModLoader; python ../httpserver.py 8000 &> /dev/null) &
+    python httpserver.py 8001 &> /dev/null &
+    wait
+fi
