@@ -1,6 +1,6 @@
-// import { PolyMod, MixinType, PolyModLoader } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
+import { PolyMod, PolyModLoader } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
 // If the below line is uncommented in main branch, then scream at me
-import { PolyMod, MixinType, PolyModLoader, SettingType } from "../PolyModLoader/PolyModLoader.js";
+// import { PolyMod, PolyModLoader } from "../PolyModLoader/PolyModLoader.js";
 
 class ErrorPopupMod extends PolyMod {
     pml: PolyModLoader
@@ -23,8 +23,8 @@ class ErrorPopupMod extends PolyMod {
 
     #showError(err: any) {
         // ~~stolen~~ i mean borrowed from pmlcore with a few changes
-        let menuDiv = document.getElementById("ui");
-        let trackInfoDiv = document.createElement('div');
+        const menuDiv = document.getElementById("ui");
+        const trackInfoDiv = document.createElement('div');
         trackInfoDiv.style = `    interpolate-size: allow-keywords;
         --text-color: #ffffff;
         --text-disabled-color: #5d6a7c;
@@ -53,7 +53,7 @@ class ErrorPopupMod extends PolyMod {
         padding: 0;
         width: 1000px;
         height: 100%;`;
-        let containerDiv = document.createElement("div");
+        const containerDiv = document.createElement("div");
         containerDiv.style = `    interpolate-size: allow-keywords;
         --text-disabled-color: #5d6a7c;
         --surface-color: #28346a;
@@ -84,7 +84,7 @@ class ErrorPopupMod extends PolyMod {
             `
             <h1>Oh no, Polytrack has crashed!</h1>
             <p>Here is the error message so that you can report it:</p>
-            <pre><code>${err.stack}</code></pre>
+            <pre><code>${msg}</code></pre>
             `;
         trackInfoDiv.appendChild(containerDiv);
         menuDiv?.appendChild(trackInfoDiv);
