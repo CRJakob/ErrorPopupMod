@@ -23,7 +23,6 @@ class ErrorPopupMod extends PolyMod {
         const menuDiv = document.getElementById("ui");
         const trackInfoDiv = document.createElement('div');
         trackInfoDiv.style = `    interpolate-size: allow-keywords;
-        --text-color: #ffffff;
         --text-disabled-color: #5d6a7c;
         --surface-color: #28346a;
         --surface-secondary-color: #212b58;
