@@ -12,13 +12,10 @@ class ErrorPopupMod extends PolyMod {
             const { error } = e;
             this.#showError(error);
         });
-
         window.addEventListener("unhandledrejection", e => {
             const { reason } = e;
             this.#showError(reason);
         });
-
-        throw TypeError("die");
     }
 
     #showError(err: any) {
@@ -26,7 +23,6 @@ class ErrorPopupMod extends PolyMod {
         const menuDiv = document.getElementById("ui");
         const trackInfoDiv = document.createElement('div');
         trackInfoDiv.style = `    interpolate-size: allow-keywords;
-        --text-color: #ffffff;
         --text-disabled-color: #5d6a7c;
         --surface-color: #28346a;
         --surface-secondary-color: #212b58;
@@ -82,7 +78,7 @@ class ErrorPopupMod extends PolyMod {
         const msg = err instanceof Error ? err.stack : `(Custom error message): ${err}`;
         containerDiv.innerHTML =
             `
-            <h1>Oh no, Polytrack has crashed!</h1>
+            <h1>Oh no, PolyTrack has crashed!</h1>
             <p>Here is the error message so that you can report it:</p>
             <pre><code>${msg}</code></pre>
             `;
