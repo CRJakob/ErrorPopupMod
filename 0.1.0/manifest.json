@@ -1,0 +1,12 @@
+{
+    "polymod": {
+        "name": "Error Popup Mod",
+        "id": "errpopups",
+        "author": "Lockheed SR-71 Blackbird",
+        "targets": [
+            "0.5.0"
+        ],
+        "main": "main.mod.js"
+    },
+    "dependencies": []
+}
