@@ -6,7 +6,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var _ErrorPopupMod_instances, _ErrorPopupMod_showError;
 // import { PolyMod, MixinType, PolyModLoader } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
 // If the below line is uncommented in main branch, then scream at me
-import { PolyMod } from "../PolyModLoader/PolyModLoader.js";
+import { PolyMod, PolyModLoader } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
 class ErrorPopupMod extends PolyMod {
     constructor() {
         super(...arguments);
@@ -21,7 +21,6 @@ class ErrorPopupMod extends PolyMod {
                 const { reason } = e;
                 __classPrivateFieldGet(this, _ErrorPopupMod_instances, "m", _ErrorPopupMod_showError).call(this, reason);
             });
-            throw TypeError("die");
         };
     }
 }
