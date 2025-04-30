@@ -1,6 +1,6 @@
 // import { PolyMod, PolyModLoader } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
 // If the below line is uncommented in main branch, then scream at me
-import { PolyMod, PolyModLoader } from "../PolyModLoader/PolyModLoader.js";
+import { PolyMod, PolyModLoader, MixinType } from "../PolyModLoader/PolyModLoader.js";
 
 class PolyDebug extends PolyMod {
     pml: PolyModLoader
@@ -16,10 +16,10 @@ class PolyDebug extends PolyMod {
             const { reason } = e;
             this.#showCrashScreen(reason);
         });
-    }
 
-    simInit = () => {
-        throw TypeError("die");
+        this.pml.registerFuncMixin("hD", MixinType.HEAD, [], () => {
+            throw TypeError("die");
+        });
     }
 
     #showCrashScreen(err: any) {
@@ -61,18 +61,14 @@ class PolyDebug extends PolyMod {
         });
         buttonWrapper.appendChild(button);
 
-        // in a prototype so i can call it later in the back button in the debug screen
-        this.#showCrashScreen.prototype.populateMsg = function () {
-            const msg = err instanceof Error ? err.stack : `(Custom error message): ${err}`;
-            textDiv.innerHTML =
-                `
-                <h1>Oh no, PolyTrack has crashed!</h1>
-                <p>Here is the error message so that you can report it:</p>
-                <pre style="white-space: pre-wrap"e><code>${msg}</code></pre>
-                `;
-            containerDiv.appendChild(textDiv);
-        }
-        this.#showCrashScreen.prototype.populateMsg();
+        const msg = err instanceof Error ? err.stack : `(Custom error message): ${err}`;
+        textDiv.innerHTML =
+            `
+            <h1>Oh no, PolyTrack has crashed!</h1>
+            <p>Here is the error message so that you can report it:</p>
+            <pre style="white-space: pre-wrap"e><code>${msg}</code></pre>
+            `;
+        containerDiv.appendChild(textDiv);
         containerDiv.appendChild(buttonWrapper);
         mainDiv.appendChild(containerDiv);
         if (mainDivCreated) menuDiv.appendChild(mainDiv);
@@ -93,17 +89,17 @@ class PolyDebug extends PolyMod {
             dropdownButton.style.display = "inline-flex";
             dropdownButton.style.flex = "4";
             dropdownButton.style.fontSize = "15px";
-            dropdownButton.innerHTML = `<img src="images/arrow_right.svg">  ${id}`;
+            dropdownButton.innerHTML = `<img src="images/arrow_right.svg">&nbsp;${id}`;
             dropdownButton.dataset.dropped = "false";
             dropdownButton.addEventListener("click", _ => {
                 if (dropdownButton.dataset.dropped! === "true") {
                     document.getElementById(`debugscreen-dropdown${id}`)?.remove();
-                    dropdownButton.innerHTML = `<img src="images/arrow_right.svg">  ${id}`;
+                    dropdownButton.innerHTML = `<img src="images/arrow_right.svg">&nbsp;${id}`;
                     dropdownButton.dataset.dropped = "false";
                     return;
                 }
 
-                dropdownButton.innerHTML = `<img src="images/arrow_down.svg">  ${id}`;
+                dropdownButton.innerHTML = `<img src="images/arrow_down.svg">&nbsp;${id}`;
                 dropdownButton.dataset.dropped = "true";
                 const dropDownDiv = document.createElement("div");
                 dropDownDiv.id = `debugscreen-dropdown${id}`;
@@ -126,10 +122,12 @@ class PolyDebug extends PolyMod {
                 baseText.style.height = "20px";
                 baseText.style.fontSize = "15px";
                 baseText.placeholder = mod.base;
+                baseText.value = mod.base;
                 baseText.addEventListener("input", _ => {
                     const text = baseText.value === "" ? baseText.placeholder : baseText.value;
                     mod.base = text;
-                    throw text;
+
+                    localStorage.setItem("polyMods", JSON.stringify(mods));
                 });
                 baseDiv.appendChild(base);
                 baseDiv.appendChild(baseText);
@@ -152,9 +150,13 @@ class PolyDebug extends PolyMod {
                 versionText.style.height = "20px";
                 versionText.style.fontSize = "15px";
                 versionText.placeholder = mod.version;
+                versionText.value = mod.version;
                 versionText.addEventListener("input", _ => {
                     const text = versionText.value === "" ? versionText.placeholder : versionText.value;
                     mod.version = text;
+                    console.log("Changed version");
+
+                    localStorage.setItem("polyMods", JSON.stringify(mods));
                 });
                 versionDiv.appendChild(version);
                 versionDiv.appendChild(versionText);
@@ -177,6 +179,7 @@ class PolyDebug extends PolyMod {
                 loadedText.style.height = "20px";
                 loadedText.style.fontSize = "15px";
                 loadedText.placeholder = mod.loaded.toString();
+                loadedText.value = mod.loaded.toString();
                 loadedText.addEventListener("input", _ => {
                     const text = loadedText.value === "" ? loadedText.placeholder : loadedText.value;
                     let val: boolean | undefined = undefined;
@@ -191,7 +194,19 @@ class PolyDebug extends PolyMod {
                         default:
                             break;
                     }
-                    mod.base = val !== undefined ? val.toString() : loadedText.placeholder;
+                    let loadedVal: boolean;
+                    switch (loadedText.placeholder) {
+                        case "true":
+                            loadedVal = true;
+                            break;
+                        case "false":
+                            loadedVal = false;
+                            break;
+                    }
+                    // @ts-ignore
+                    mod.loaded = val !== undefined ? val : loadedVal;
+
+                    localStorage.setItem("polyMods", JSON.stringify(mods));
                 });
                 loadedDiv.appendChild(loaded);
                 loadedDiv.appendChild(loadedText);
@@ -205,7 +220,15 @@ class PolyDebug extends PolyMod {
             const delButton = document.createElement("button");
             delButton.className = "button first";
             delButton.style.flex = "1";
-            delButton.innerHTML = `<img src="images/cancel.svg"; margin-bottom: 5px>`
+            delButton.style.padding = "3px";
+            delButton.innerHTML = `<img src="images/cancel.svg">`;
+            delButton.addEventListener("click", _ => {
+                // Deleting pml is impossible, because you really dont want to delete it
+                if (id === 0) return;
+
+                mods.splice(id, 1);
+                modDiv.remove();
+            });
 
             dropdownDiv.appendChild(dropdownButton);
             dropdownDiv.appendChild(delButton);

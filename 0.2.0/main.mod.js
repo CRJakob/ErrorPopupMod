@@ -6,7 +6,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var _PolyDebug_instances, _PolyDebug_showCrashScreen, _PolyDebug_showModDebugScreen;
 // import { PolyMod, PolyModLoader } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
 // If the below line is uncommented in main branch, then scream at me
-import { PolyMod } from "../PolyModLoader/PolyModLoader.js";
+import { PolyMod, MixinType } from "../PolyModLoader/PolyModLoader.js";
 class PolyDebug extends PolyMod {
     constructor() {
         super(...arguments);
@@ -21,9 +21,9 @@ class PolyDebug extends PolyMod {
                 const { reason } = e;
                 __classPrivateFieldGet(this, _PolyDebug_instances, "m", _PolyDebug_showCrashScreen).call(this, reason);
             });
-        };
-        this.simInit = () => {
-            throw TypeError("die");
+            this.pml.registerFuncMixin("hD", MixinType.HEAD, [], () => {
+                throw TypeError("die");
+            });
         };
     }
 }
@@ -64,18 +64,14 @@ _PolyDebug_instances = new WeakSet(), _PolyDebug_showCrashScreen = function _Pol
         __classPrivateFieldGet(this, _PolyDebug_instances, "m", _PolyDebug_showModDebugScreen).call(this, containerDiv);
     });
     buttonWrapper.appendChild(button);
-    // in a prototype so i can call it later in the back button in the debug screen
-    __classPrivateFieldGet(this, _PolyDebug_instances, "m", _PolyDebug_showCrashScreen).prototype.populateMsg = function () {
-        const msg = err instanceof Error ? err.stack : `(Custom error message): ${err}`;
-        textDiv.innerHTML =
-            `
-                <h1>Oh no, PolyTrack has crashed!</h1>
-                <p>Here is the error message so that you can report it:</p>
-                <pre style="white-space: pre-wrap"e><code>${msg}</code></pre>
-                `;
-        containerDiv.appendChild(textDiv);
-    };
-    __classPrivateFieldGet(this, _PolyDebug_instances, "m", _PolyDebug_showCrashScreen).prototype.populateMsg();
+    const msg = err instanceof Error ? err.stack : `(Custom error message): ${err}`;
+    textDiv.innerHTML =
+        `
+            <h1>Oh no, PolyTrack has crashed!</h1>
+            <p>Here is the error message so that you can report it:</p>
+            <pre style="white-space: pre-wrap"e><code>${msg}</code></pre>
+            `;
+    containerDiv.appendChild(textDiv);
     containerDiv.appendChild(buttonWrapper);
     mainDiv.appendChild(containerDiv);
     if (mainDivCreated)
@@ -94,16 +90,16 @@ _PolyDebug_instances = new WeakSet(), _PolyDebug_showCrashScreen = function _Pol
         dropdownButton.style.display = "inline-flex";
         dropdownButton.style.flex = "4";
         dropdownButton.style.fontSize = "15px";
-        dropdownButton.innerHTML = `<img src="images/arrow_right.svg">  ${id}`;
+        dropdownButton.innerHTML = `<img src="images/arrow_right.svg">&nbsp;${id}`;
         dropdownButton.dataset.dropped = "false";
         dropdownButton.addEventListener("click", _ => {
             if (dropdownButton.dataset.dropped === "true") {
                 document.getElementById(`debugscreen-dropdown${id}`)?.remove();
-                dropdownButton.innerHTML = `<img src="images/arrow_right.svg">  ${id}`;
+                dropdownButton.innerHTML = `<img src="images/arrow_right.svg">&nbsp;${id}`;
                 dropdownButton.dataset.dropped = "false";
                 return;
             }
-            dropdownButton.innerHTML = `<img src="images/arrow_down.svg">  ${id}`;
+            dropdownButton.innerHTML = `<img src="images/arrow_down.svg">&nbsp;${id}`;
             dropdownButton.dataset.dropped = "true";
             const dropDownDiv = document.createElement("div");
             dropDownDiv.id = `debugscreen-dropdown${id}`;
@@ -125,10 +121,11 @@ _PolyDebug_instances = new WeakSet(), _PolyDebug_showCrashScreen = function _Pol
             baseText.style.height = "20px";
             baseText.style.fontSize = "15px";
             baseText.placeholder = mod.base;
+            baseText.value = mod.base;
             baseText.addEventListener("input", _ => {
                 const text = baseText.value === "" ? baseText.placeholder : baseText.value;
                 mod.base = text;
-                throw text;
+                localStorage.setItem("polyMods", JSON.stringify(mods));
             });
             baseDiv.appendChild(base);
             baseDiv.appendChild(baseText);
@@ -150,9 +147,12 @@ _PolyDebug_instances = new WeakSet(), _PolyDebug_showCrashScreen = function _Pol
             versionText.style.height = "20px";
             versionText.style.fontSize = "15px";
             versionText.placeholder = mod.version;
+            versionText.value = mod.version;
             versionText.addEventListener("input", _ => {
                 const text = versionText.value === "" ? versionText.placeholder : versionText.value;
                 mod.version = text;
+                console.log("Changed version");
+                localStorage.setItem("polyMods", JSON.stringify(mods));
             });
             versionDiv.appendChild(version);
             versionDiv.appendChild(versionText);
@@ -174,6 +174,7 @@ _PolyDebug_instances = new WeakSet(), _PolyDebug_showCrashScreen = function _Pol
             loadedText.style.height = "20px";
             loadedText.style.fontSize = "15px";
             loadedText.placeholder = mod.loaded.toString();
+            loadedText.value = mod.loaded.toString();
             loadedText.addEventListener("input", _ => {
                 const text = loadedText.value === "" ? loadedText.placeholder : loadedText.value;
                 let val = undefined;
@@ -187,7 +188,18 @@ _PolyDebug_instances = new WeakSet(), _PolyDebug_showCrashScreen = function _Pol
                     default:
                         break;
                 }
-                mod.base = val !== undefined ? val.toString() : loadedText.placeholder;
+                let loadedVal;
+                switch (loadedText.placeholder) {
+                    case "true":
+                        loadedVal = true;
+                        break;
+                    case "false":
+                        loadedVal = false;
+                        break;
+                }
+                // @ts-ignore
+                mod.loaded = val !== undefined ? val : loadedVal;
+                localStorage.setItem("polyMods", JSON.stringify(mods));
             });
             loadedDiv.appendChild(loaded);
             loadedDiv.appendChild(loadedText);
@@ -199,7 +211,15 @@ _PolyDebug_instances = new WeakSet(), _PolyDebug_showCrashScreen = function _Pol
         const delButton = document.createElement("button");
         delButton.className = "button first";
         delButton.style.flex = "1";
-        delButton.innerHTML = `<img src="images/cancel.svg"; margin-bottom: 5px>`;
+        delButton.style.padding = "3px";
+        delButton.innerHTML = `<img src="images/cancel.svg">`;
+        delButton.addEventListener("click", _ => {
+            // Deleting pml is impossible, because you really dont want to delete it
+            if (id === 0)
+                return;
+            mods.splice(id, 1);
+            modDiv.remove();
+        });
         dropdownDiv.appendChild(dropdownButton);
         dropdownDiv.appendChild(delButton);
         modDiv.appendChild(dropdownDiv);
