@@ -1,6 +1,6 @@
-// import { PolyMod, PolyModLoader } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
+import { PolyMod, PolyModLoader, MixinType } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
 // If the below line is uncommented in main branch, then scream at me
-import { PolyMod, PolyModLoader, MixinType } from "../PolyModLoader/PolyModLoader.js";
+// import { PolyMod, PolyModLoader, MixinType } from "../PolyModLoader/PolyModLoader.js";
 
 class PolyDebug extends PolyMod {
     pml: PolyModLoader
