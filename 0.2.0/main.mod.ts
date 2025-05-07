@@ -1,6 +1,6 @@
-// import { PolyMod, PolyModLoader, MixinType } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
+import { PolyMod, PolyModLoader } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
 // If the below line is uncommented in main branch, then scream at me
-import { PolyMod, PolyModLoader, MixinType } from "../PolyModLoader/PolyModLoader.js";
+// import { PolyMod, PolyModLoader } from "../PolyModLoader/PolyModLoader.js";
 
 class PolyDebug extends PolyMod {
     pml: PolyModLoader
@@ -80,9 +80,7 @@ class PolyDebug extends PolyMod {
             document.body.appendChild(this.console);
 
             this.pml.registerBindCategory("PolyDebug");
-            this.pml.registerKeybind("Show Console", "show_console", "keydown", "KeyC", null, (_: any) => {
-                this.#showConsoleScreen();
-            });
+            this.pml.registerKeybind("Show Console", "show_console", "keydown", "KeyC", null, (_: any) => this.#showConsoleScreen());
         }
 
         // Error popup stuff
@@ -95,10 +93,7 @@ class PolyDebug extends PolyMod {
             this.#showCrashScreen(reason);
         });
 
-        // Crash game on startup
-        // this.pml.registerFuncMixin("hD", MixinType.HEAD, [], () => {
-        //     throw TypeError("die");
-        // });
+        this.pml.registerKeybind("Crash Game", "crash_game", "keydown", "KeyY", null, (_: any) => { throw TypeError("die"); });
     }
 
     #showConsoleScreen() {

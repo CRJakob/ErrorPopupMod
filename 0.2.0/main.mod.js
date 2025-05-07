@@ -4,9 +4,9 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
 var _PolyDebug_instances, _PolyDebug_showConsoleScreen, _PolyDebug_updateConsole, _PolyDebug_showCrashScreen, _PolyDebug_showModDebugScreen;
-// import { PolyMod, PolyModLoader, MixinType } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
+import { PolyMod } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
 // If the below line is uncommented in main branch, then scream at me
-import { PolyMod } from "../PolyModLoader/PolyModLoader.js";
+// import { PolyMod, PolyModLoader } from "../PolyModLoader/PolyModLoader.js";
 class PolyDebug extends PolyMod {
     constructor() {
         super(...arguments);
@@ -76,9 +76,7 @@ class PolyDebug extends PolyMod {
                 this.console.appendChild(consoleDiv);
                 document.body.appendChild(this.console);
                 this.pml.registerBindCategory("PolyDebug");
-                this.pml.registerKeybind("Show Console", "show_console", "keydown", "KeyC", null, (_) => {
-                    __classPrivateFieldGet(this, _PolyDebug_instances, "m", _PolyDebug_showConsoleScreen).call(this);
-                });
+                this.pml.registerKeybind("Show Console", "show_console", "keydown", "KeyC", null, (_) => __classPrivateFieldGet(this, _PolyDebug_instances, "m", _PolyDebug_showConsoleScreen).call(this));
             }
             // Error popup stuff
             window.addEventListener("error", e => {
@@ -89,10 +87,7 @@ class PolyDebug extends PolyMod {
                 const { reason } = e;
                 __classPrivateFieldGet(this, _PolyDebug_instances, "m", _PolyDebug_showCrashScreen).call(this, reason);
             });
-            // Crash game on startup
-            // this.pml.registerFuncMixin("hD", MixinType.HEAD, [], () => {
-            //     throw TypeError("die");
-            // });
+            this.pml.registerKeybind("Crash Game", "crash_game", "keydown", "KeyY", null, (_) => { throw TypeError("die"); });
         };
     }
 }
