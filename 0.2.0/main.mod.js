@@ -4,7 +4,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
 var _PolyDebug_instances, _PolyDebug_showCrashScreen, _PolyDebug_showModDebugScreen;
-import { PolyMod, MixinType } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
+import { PolyMod } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
 // If the below line is uncommented in main branch, then scream at me
 // import { PolyMod, PolyModLoader, MixinType } from "../PolyModLoader/PolyModLoader.js";
 class PolyDebug extends PolyMod {
@@ -13,6 +13,29 @@ class PolyDebug extends PolyMod {
         _PolyDebug_instances.add(this);
         this.init = (pmlInstance) => {
             this.pml = pmlInstance;
+            // Setup the confirm dialog for deleting mods in localstorage editor
+            {
+                this.confirm = document.createElement("dialog");
+                this.confirm.className = "hidden";
+                const confirmDiv = document.createElement("div");
+                confirmDiv.style = "transform: scale(0.32375)";
+                const warning = document.createElement("p");
+                warning.innerText = "Are you sure you want to delete this mod?";
+                const yes = document.createElement("button");
+                yes.className = "button";
+                yes.innerText = "Yes";
+                yes.addEventListener("click", _ => this.confirm.close("1"));
+                const no = document.createElement("button");
+                no.className = "button";
+                no.innerText = "No";
+                no.addEventListener("click", _ => this.confirm.close("0"));
+                confirmDiv.appendChild(warning);
+                confirmDiv.appendChild(yes);
+                confirmDiv.appendChild(no);
+                this.confirm.appendChild(confirmDiv);
+                document.body.appendChild(this.confirm);
+            }
+            // Error popup stuff
             window.addEventListener("error", e => {
                 const { error } = e;
                 __classPrivateFieldGet(this, _PolyDebug_instances, "m", _PolyDebug_showCrashScreen).call(this, error);
@@ -21,9 +44,10 @@ class PolyDebug extends PolyMod {
                 const { reason } = e;
                 __classPrivateFieldGet(this, _PolyDebug_instances, "m", _PolyDebug_showCrashScreen).call(this, reason);
             });
-            this.pml.registerFuncMixin("hD", MixinType.HEAD, [], () => {
-                throw TypeError("die");
-            });
+            // Crash game on startup
+            // this.pml.registerFuncMixin("hD", MixinType.HEAD, [], () => {
+            //     throw TypeError("die");
+            // });
         };
     }
 }
@@ -57,7 +81,7 @@ _PolyDebug_instances = new WeakSet(), _PolyDebug_showCrashScreen = function _Pol
     button.className = "button first";
     button.disabled = false;
     button.style = "margin: 10px 0; float: bottom;padding: 10px; margin-left:2px; align";
-    button.innerHTML = "Test";
+    button.innerHTML = "Go to localstorage editor";
     button.addEventListener("click", _ => {
         textDiv.remove();
         containerDiv.innerHTML = "";
@@ -217,8 +241,23 @@ _PolyDebug_instances = new WeakSet(), _PolyDebug_showCrashScreen = function _Pol
             // Deleting pml is impossible, because you really dont want to delete it
             if (id === 0)
                 return;
-            mods.splice(id, 1);
-            modDiv.remove();
+            this.confirm.className = "message-box confirm";
+            this.confirm.showModal();
+            this.confirm.onclose = _ => {
+                switch (this.confirm.returnValue) {
+                    case "1": {
+                        mods.splice(id, 1);
+                        modDiv.remove();
+                        localStorage.setItem("polyMods", JSON.stringify(mods));
+                        break;
+                    }
+                    case "0":
+                    case "default":
+                    default:
+                        return;
+                }
+                this.confirm.className = "hidden";
+            };
         });
         dropdownDiv.appendChild(dropdownButton);
         dropdownDiv.appendChild(delButton);

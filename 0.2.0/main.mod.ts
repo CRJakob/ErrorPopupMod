@@ -4,10 +4,37 @@ import { PolyMod, PolyModLoader, MixinType } from "https://pml.orangy.cfd/PolyTr
 
 class PolyDebug extends PolyMod {
     pml: PolyModLoader
+    confirm: HTMLDialogElement
 
     init = (pmlInstance: PolyModLoader) => {
         this.pml = pmlInstance;
 
+        // Setup the confirm dialog for deleting mods in localstorage editor
+        {
+            this.confirm = document.createElement("dialog");
+            this.confirm.className = "hidden";
+            const confirmDiv = document.createElement("div");
+            confirmDiv.style = "transform: scale(0.32375)";
+            const warning = document.createElement("p");
+            warning.innerText = "Are you sure you want to delete this mod?";
+            const yes = document.createElement("button");
+            yes.className = "button";
+            yes.innerText = "Yes";
+            yes.addEventListener("click", _ => this.confirm.close("1"));
+            const no = document.createElement("button");
+            no.className = "button";
+            no.innerText = "No";
+            no.addEventListener("click", _ => this.confirm.close("0"));
+
+            confirmDiv.appendChild(warning);
+            confirmDiv.appendChild(yes);
+            confirmDiv.appendChild(no);
+
+            this.confirm.appendChild(confirmDiv);
+            document.body.appendChild(this.confirm);
+        }
+
+        // Error popup stuff
         window.addEventListener("error", e => {
             const { error } = e;
             this.#showCrashScreen(error);
@@ -17,9 +44,10 @@ class PolyDebug extends PolyMod {
             this.#showCrashScreen(reason);
         });
 
-        this.pml.registerFuncMixin("hD", MixinType.HEAD, [], () => {
-            throw TypeError("die");
-        });
+        // Crash game on startup
+        // this.pml.registerFuncMixin("hD", MixinType.HEAD, [], () => {
+        //     throw TypeError("die");
+        // });
     }
 
     #showCrashScreen(err: any) {
@@ -53,7 +81,7 @@ class PolyDebug extends PolyMod {
         button.className = "button first";
         button.disabled = false;
         button.style = "margin: 10px 0; float: bottom;padding: 10px; margin-left:2px; align";
-        button.innerHTML = "Test";
+        button.innerHTML = "Go to localstorage editor";
         button.addEventListener("click", _ => {
             textDiv.remove();
             containerDiv.innerHTML = "";
@@ -226,8 +254,27 @@ class PolyDebug extends PolyMod {
                 // Deleting pml is impossible, because you really dont want to delete it
                 if (id === 0) return;
 
-                mods.splice(id, 1);
-                modDiv.remove();
+                this.confirm.className = "message-box confirm";
+                this.confirm.showModal();
+                this.confirm.onclose = _ => {
+                    switch (this.confirm.returnValue) {
+                        case "1": {
+                            mods.splice(id, 1);
+                            modDiv.remove();
+
+                            localStorage.setItem("polyMods", JSON.stringify(mods));
+
+                            break;
+                        }
+
+                        case "0":
+                        case "default":
+                        default:
+                            return;
+                    }
+
+                    this.confirm.className = "hidden";
+                };
             });
 
             dropdownDiv.appendChild(dropdownButton);
