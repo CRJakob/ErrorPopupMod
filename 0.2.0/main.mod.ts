@@ -1,10 +1,11 @@
-import { PolyMod, PolyModLoader, MixinType } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
+// import { PolyMod, PolyModLoader, MixinType } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
 // If the below line is uncommented in main branch, then scream at me
-// import { PolyMod, PolyModLoader, MixinType } from "../PolyModLoader/PolyModLoader.js";
+import { PolyMod, PolyModLoader, MixinType } from "../PolyModLoader/PolyModLoader.js";
 
 class PolyDebug extends PolyMod {
     pml: PolyModLoader
     confirm: HTMLDialogElement
+    console: HTMLDialogElement
 
     init = (pmlInstance: PolyModLoader) => {
         this.pml = pmlInstance;
@@ -12,6 +13,7 @@ class PolyDebug extends PolyMod {
         // Setup the confirm dialog for deleting mods in localstorage editor
         {
             this.confirm = document.createElement("dialog");
+            this.confirm.id = "delete-mod-confirm";
             this.confirm.className = "hidden";
             const confirmDiv = document.createElement("div");
             confirmDiv.style = "transform: scale(0.32375)";
@@ -34,6 +36,55 @@ class PolyDebug extends PolyMod {
             document.body.appendChild(this.confirm);
         }
 
+        // Setup console popup stuff
+        // reference: https://stackoverflow.com/a/67449524
+        {
+            const formatter = Intl.DateTimeFormat(undefined, {
+                hour: "numeric",
+                minute: "numeric",
+                second: "numeric",
+                fractionalSecondDigits: 3,
+                hour12: false,
+            });
+            function hookLogType(logType: LogType) {
+                const original = console[logType].bind(console)
+                return (function () {
+                    this.#updateConsole(logType, formatter.format(Date.now()), Array.from(arguments));
+                    original.apply(console, arguments);
+                }).bind(this);
+            }
+            // @ts-ignore
+            // i hate javascript
+            hookLogType = hookLogType.bind(this);
+
+            ['log', 'error', 'warn', 'debug', 'info'].forEach(logType => {
+                // @ts-ignore
+                console[logType] = hookLogType(logType);
+            });
+
+            this.console = document.createElement("dialog");
+            this.console.id = "console-box";
+            this.console.className = "hidden";
+            const consoleDiv = document.createElement("div");
+            consoleDiv.className = "container";
+            consoleDiv.style.top = "5%";
+            consoleDiv.style.left = "calc(50% - 75% / 2)";
+            consoleDiv.style.height = "90%";
+            consoleDiv.style.width = "75%";
+            consoleDiv.style.textAlign = "left";
+
+            this.console.addEventListener("close", _ => {
+                this.console.className = "hidden";
+            });
+            this.console.appendChild(consoleDiv);
+            document.body.appendChild(this.console);
+
+            this.pml.registerBindCategory("PolyDebug");
+            this.pml.registerKeybind("Show Console", "show_console", "keydown", "KeyC", null, (_: any) => {
+                this.#showConsoleScreen();
+            });
+        }
+
         // Error popup stuff
         window.addEventListener("error", e => {
             const { error } = e;
@@ -48,6 +99,61 @@ class PolyDebug extends PolyMod {
         // this.pml.registerFuncMixin("hD", MixinType.HEAD, [], () => {
         //     throw TypeError("die");
         // });
+    }
+
+    #showConsoleScreen() {
+        this.console.className = "message-box message";
+        this.console.showModal();
+    }
+
+    #updateConsole(logType: LogType, time: string, args: Array<any>) {
+        // @ts-ignore
+        const consoleDiv: HTMLDivElement = this.console.children[0];
+
+        const messageDiv = document.createElement("div");
+        const timeDiv = document.createElement("div");
+        timeDiv.style.color = "#ADACA5";
+        timeDiv.style.fontSize = "15px";
+        timeDiv.innerText = `[${logType.toUpperCase()} at ${time}]`;
+        const textDiv = document.createElement("div");
+        textDiv.style.color = (() => {
+            switch (logType) {
+                case LogType.Log: return "#FFFCE9";
+                case LogType.Info: return "#CAF2FD";
+                case LogType.Debug: return "#CD62D9";
+                case LogType.Warn: return "#FAFF58";
+                case LogType.Error: return "#F42955";
+
+                default: return "#FFFFFF";
+            }
+        })();
+        textDiv.style.fontSize = "20px";
+        let msg = '<pre style="margin: 0px">> ';
+        function stringify(obj: any): string {
+            if (obj instanceof Error) return obj.stack!;
+            else if (obj instanceof Function) return `(function ${obj.name})`;
+            else if (obj instanceof Array) {
+                if (obj.length === 0) return "[]";
+
+                let str = `[ ${stringify(obj[0])}`;
+                for (const obj1 of obj.slice(1)) {
+                    str += `, ${stringify(obj1)}`;
+                }
+                str += " ]";
+                return str;
+            } else if (typeof obj === "object") {
+                try { return JSON.stringify(obj, undefined, 2); } catch { return obj.toString(); }
+            } else return obj.toString();
+        }
+        for (const arg of args) {
+            msg += `${stringify(arg)}&nbsp;`;
+        }
+        msg += "</pre><hr />";
+        textDiv.innerHTML = msg;
+
+        messageDiv.appendChild(timeDiv);
+        messageDiv.appendChild(textDiv);
+        consoleDiv.appendChild(messageDiv);
     }
 
     #showCrashScreen(err: any) {
@@ -255,7 +361,6 @@ class PolyDebug extends PolyMod {
                 if (id === 0) return;
 
                 this.confirm.className = "message-box confirm";
-                this.confirm.showModal();
                 this.confirm.onclose = _ => {
                     switch (this.confirm.returnValue) {
                         case "1": {
@@ -275,6 +380,7 @@ class PolyDebug extends PolyMod {
 
                     this.confirm.className = "hidden";
                 };
+                this.confirm.showModal();
             });
 
             dropdownDiv.appendChild(dropdownButton);
@@ -283,6 +389,15 @@ class PolyDebug extends PolyMod {
             div.appendChild(modDiv);
         }
     }
+}
+
+// ['log', 'error', 'warn', 'debug', 'info']
+enum LogType {
+    Log = "log",
+    Info = "info",
+    Debug = "debug",
+    Warn = "warn",
+    Error = "error",
 }
 
 export const polyMod = new PolyDebug();

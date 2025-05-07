@@ -2,7 +2,7 @@
 
 trap "trap - TERM && kill -- -$$" INT TERM EXIT
 
-watchexec -e ts --timings -- '
+watchexec -e ts,md --timings -- '
 for dir in */; do
     if [[ $dir == "PolyModLoader/" ]]; then continue; fi
     pandoc -f markdown -t html $dir/description.md -o $dir/description.html --lua-filter pandoc-filter.lua
