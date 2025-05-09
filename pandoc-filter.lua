@@ -4,6 +4,8 @@ Div = function(block)
 end
 
 Header = function(heading)
-    heading.attributes['style'] = "color: #ffffff; text-align: center"
+    if heading.level == 1 then
+        heading.attributes['style'] = "color: #ffffff; text-align: center"
+    end
     return heading
 end

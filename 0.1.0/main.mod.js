@@ -4,9 +4,9 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
 var _ErrorPopupMod_instances, _ErrorPopupMod_showError;
-// import { PolyMod, MixinType, PolyModLoader } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
+import { PolyMod } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
 // If the below line is uncommented in main branch, then scream at me
-import { PolyMod, PolyModLoader } from "https://pml.orangy.cfd/PolyTrackMods/PolyModLoader/0.5.0/PolyModLoader.js";
+// import { PolyMod, PolyModLoader } from "../PolyModLoader/PolyModLoader.js";
 class ErrorPopupMod extends PolyMod {
     constructor() {
         super(...arguments);
@@ -25,10 +25,10 @@ class ErrorPopupMod extends PolyMod {
     }
 }
 _ErrorPopupMod_instances = new WeakSet(), _ErrorPopupMod_showError = function _ErrorPopupMod_showError(err) {
-    let menuDiv = document.getElementById("ui");
-    let trackInfoDiv = document.createElement('div');
+    // ~~stolen~~ i mean borrowed from pmlcore with a few changes
+    const menuDiv = document.getElementById("ui");
+    const trackInfoDiv = document.createElement('div');
     trackInfoDiv.style = `    interpolate-size: allow-keywords;
-        --text-color: #ffffff;
         --text-disabled-color: #5d6a7c;
         --surface-color: #28346a;
         --surface-secondary-color: #212b58;
@@ -55,7 +55,7 @@ _ErrorPopupMod_instances = new WeakSet(), _ErrorPopupMod_showError = function _E
         padding: 0;
         width: 1000px;
         height: 100%;`;
-    let containerDiv = document.createElement("div");
+    const containerDiv = document.createElement("div");
     containerDiv.style = `    interpolate-size: allow-keywords;
         --text-disabled-color: #5d6a7c;
         --surface-color: #28346a;
@@ -83,11 +83,11 @@ _ErrorPopupMod_instances = new WeakSet(), _ErrorPopupMod_showError = function _E
     const msg = err instanceof Error ? err.stack : `(Custom error message): ${err}`;
     containerDiv.innerHTML =
         `
-            <h1>Oh no, Polytrack has crashed!</h1>
+            <h1>Oh no, PolyTrack has crashed!</h1>
             <p>Here is the error message so that you can report it:</p>
-            <pre><code>${err.stack}</code></pre>
+            <pre><code>${msg}</code></pre>
             `;
     trackInfoDiv.appendChild(containerDiv);
-    menuDiv === null || menuDiv === void 0 ? void 0 : menuDiv.appendChild(trackInfoDiv);
+    menuDiv?.appendChild(trackInfoDiv);
 };
 export const polyMod = new ErrorPopupMod();
