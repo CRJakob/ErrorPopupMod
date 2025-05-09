@@ -88,7 +88,6 @@ class PolyDebug extends PolyMod {
                 const { reason } = e;
                 __classPrivateFieldGet(this, _PolyDebug_instances, "m", _PolyDebug_showCrashScreen).call(this, reason);
             });
-            this.pml.registerKeybind("Crash Game", "crash_game", "keydown", "KeyY", null, (_) => { throw TypeError("die"); });
         };
     }
 }

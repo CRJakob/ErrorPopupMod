@@ -93,8 +93,6 @@ class PolyDebug extends PolyMod {
             const { reason } = e;
             this.#showCrashScreen(reason);
         });
-
-        this.pml.registerKeybind("Crash Game", "crash_game", "keydown", "KeyY", null, (_: any) => { throw TypeError("die"); });
     }
 
     #showConsoleScreen() {
