@@ -72,6 +72,7 @@ class PolyDebug extends PolyMod {
             consoleDiv.style.height = "90%";
             consoleDiv.style.width = "75%";
             consoleDiv.style.textAlign = "left";
+            consoleDiv.style.overflow = "scroll";
 
             this.console.addEventListener("close", _ => {
                 this.console.className = "hidden";
